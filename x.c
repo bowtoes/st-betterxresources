@@ -14,6 +14,8 @@
 #include <X11/keysym.h>
 #include <X11/Xft/Xft.h>
 #include <X11/XKBlib.h>
+#include <X11/Xresource.h> /* Better Xresources */
+#include <pwd.h> /* Better Xresources */
 
 static char *argv0;
 #include "arg.h"
@@ -45,6 +47,20 @@ typedef struct {
 	signed char appcursor; /* application cursor */
 } Key;
 
+/* ++Better Xresources */
+enum resource_type {
+	STRING = 0,
+	INTEGER = 1,
+	FLOAT = 2
+};
+
+typedef struct {
+	char *name;
+	enum resource_type type;
+	void *dst;
+} ResourcePref;
+/* --Better Xresources */
+
 /* X modifiers */
 #define XK_ANY_MOD    UINT_MAX
 #define XK_NO_MOD     0
@@ -59,6 +75,7 @@ static void zoom(const Arg *);
 static void zoomabs(const Arg *);
 static void zoomreset(const Arg *);
 static void ttysend(const Arg *);
+static void rloadResources(const Arg *); /* Better Xresources */
 
 /* config.h for applying patches and the configuration. */
 #include "config.h"
@@ -1104,8 +1121,6 @@ xinit(int cols, int rows)
 	pid_t thispid = getpid();
 	XColor xmousefg, xmousebg;
 
-	if (!(xw.dpy = XOpenDisplay(NULL)))
-		die("can't open display\n");
 	xw.scr = XDefaultScreen(xw.dpy);
 	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
 
@@ -1983,6 +1998,128 @@ usage(void)
 	    " [stty_args ...]\n", argv0, argv0);
 }
 
+/* ++Better Xresources */
+/* Slightly modified from surf source */
+static const char*
+getuserhomedir(const char *user)
+{
+	struct passwd *pw;
+
+	if (!(pw = getpwnam(user)))
+		fprintf(stderr, "can't get user %s login information.\n", user);
+	return pw->pw_dir;
+}
+
+/* Slightly modified from surf source */
+static const char*
+getcurrentuserhomedir(void)
+{
+	const char *homedir;
+	const char *user;
+	struct passwd *pw;
+
+	if ((homedir = getenv("HOME"))) return homedir;
+	if ((user    = getenv("USER"))) return getuserhomedir(user);
+
+	if (!(pw = getpwuid(getuid())))
+		fprintf(stderr, "can't get current user home directory\n");
+
+	return pw->pw_dir;
+}
+
+/* Slightly modified from surf source */
+char *
+untildepath(const char *path)
+{
+	char *apath, *name, *p;
+	const char *homedir;
+
+	if (path[1] == '/' || path[1] == '\0') { /* path = "~" or "~/" */
+			p = (char *)&path[1];
+			homedir = getcurrentuserhomedir();
+	} else {
+		name = (p = strchr(path, '/')) ?        /* If there is a '/' in path */
+			strndup(&path[1], p - (path + 1)) : /* Pull off the bit before the '/' */
+			strdup(&path[1]);                   /* Otherwise the whole thing is a name */
+
+		homedir = getuserhomedir(name); /* ??? */
+		free(name);
+	}
+	apath = (char *)malloc(PATH_MAX);
+	snprintf(apath, PATH_MAX, "%s%s", homedir, p);
+	return apath;
+}
+
+int
+loadDatabase(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
+{
+	char **sdst = dst;
+	int *idst = dst;
+	float *fdst = dst;
+
+	char fullname[256];
+	char fullclass[256];
+	char *type;
+	XrmValue ret;
+
+	snprintf(fullname,  sizeof(fullname),  "%s.%s", opt_name  ? opt_name  : "st", name);
+	snprintf(fullclass, sizeof(fullclass), "%s.%s", opt_class ? opt_class : "St", name);
+
+	XrmGetResource(db, fullname, fullclass, &type, &ret);
+	if (ret.addr == NULL || strncmp("String", type, 64))
+		return 1;
+
+	if (rtype == STRING)
+		*sdst = ret.addr;
+	else if (rtype == INTEGER)
+		*idst = strtoul(ret.addr, NULL, 10);
+	else if (rtype == FLOAT)
+		*fdst = strtof(ret.addr, NULL);
+
+	return 0;
+}
+
+void
+loadResourceFile(const char *file)
+{
+	XrmDatabase db;
+	ResourcePref *p;
+	char *apath, *path;
+
+	apath = file[0] == '~' ? untildepath(file) : strdup(file);
+	path = realpath(apath, NULL);
+	free(apath);
+
+	if (!path)
+		return;
+	db = XrmGetFileDatabase(path);
+	free(path);
+
+	if (!db)
+		return;
+	for (p = resources; p < resources + LEN(resources); p++)
+		loadDatabase(db, p->name, p->type, p->dst);
+}
+
+void
+loadResources(void)
+{
+	int i = 0;
+
+	for (; i < LEN(resourceFiles); i++)
+		loadResourceFile(resourceFiles[i]);
+	loadResourceFile(colorsFile);
+}
+
+void
+rloadResources(const Arg *dummy)
+{
+	loadResources();
+	xloadcols();
+	cresize(win.w, win.h);
+}
+/* --Better Xresources */
+
 int
 main(int argc, char *argv[])
 {
@@ -2043,6 +2180,11 @@ run:
 
 	setlocale(LC_CTYPE, "");
 	XSetLocaleModifiers("");
+
+	if (!(xw.dpy = XOpenDisplay(NULL))) /* Better Xresources */
+		die("can't open display\n");
+	XrmInitialize(); /* Better Xresources */
+	loadResources(); /* Better Xresources */
 	cols = MAX(cols, 1);
 	rows = MAX(rows, 1);
 	tnew(cols, rows);
