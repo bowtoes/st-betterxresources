@@ -17,7 +17,7 @@
 #include <X11/Xresource.h> /* Better Xresources */
 #include <pwd.h> /* Better Xresources */
 
-static char *argv0;
+char *argv0;
 #include "arg.h"
 #include "st.h"
 #include "win.h"
