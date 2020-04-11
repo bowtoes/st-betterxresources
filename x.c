@@ -807,7 +807,7 @@ xloadcols(void)
 	for (i = 0; i < dc.collen; i++)
 		if (!xloadcolor(i, NULL, &dc.col[i])) {
 			if (colorname[i])
-				die("could not allocate color '%s'\n", colorname[i]);
+				die("could not allocate color %d: %s\n", i, colorname[i]);
 			else
 				die("could not allocate color %d\n", i);
 		}
