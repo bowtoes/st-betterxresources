@@ -166,8 +166,11 @@ ResourcePref resources[] = {
 		/* Name             Type     Variable */
 		{ "font",           STRING,  &font           },
 		{ "xcolorsFile",    STRING,  &colorsFile     },
-//		{ "alpha",          FLOAT,   &alpha          }, /* Use this if you use the alpha patch */
+//		{ "alpha",          FLOAT,   &alpha          }, /* Use this if you use the alpha or betteralpha patch */
 //		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed}, /* Use this if you use the alpha focus patch */
+//		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   }, /* Use this if you use the betteralpha patch */
+//		{ "alpha2",         FLOAT,   &alpha2         }, /* Use this if you use the betteralpha patch */
+//		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  }, /* Use this if you use the betteralpha patch */
 		{ "color0",         STRING,  &colorname[0]   },
 		{ "color1",         STRING,  &colorname[1]   },
 		{ "color2",         STRING,  &colorname[2]   },
