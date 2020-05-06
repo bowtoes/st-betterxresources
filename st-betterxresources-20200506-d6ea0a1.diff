@@ -1,5 +1,5 @@
 diff --git a/config.def.h b/config.def.h
-index 0895a1f..fee5066 100644
+index 0895a1f..c541699 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -7,6 +7,10 @@
@@ -33,7 +33,7 @@ index 0895a1f..fee5066 100644
  static unsigned int defaultcs = 256;
  static unsigned int defaultrcs = 257;
  
-@@ -152,6 +158,54 @@ static unsigned int mousebg = 0;
+@@ -152,6 +158,59 @@ static unsigned int mousebg = 0;
   */
  static unsigned int defaultattr = 11;
  
@@ -45,11 +45,16 @@ index 0895a1f..fee5066 100644
 +		/* Name             Type     Variable */
 +		{ "font",           STRING,  &font           },
 +		{ "xcolorsFile",    STRING,  &colorsFile     },
-+//		{ "alpha",          FLOAT,   &alpha          }, /* Use this if you use the alpha or betteralpha patch */
-+//		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed}, /* Use this if you use the alpha focus patch */
-+//		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   }, /* Use this if you use the betteralpha patch */
-+//		{ "alpha2",         FLOAT,   &alpha2         }, /* Use this if you use the betteralpha patch */
-+//		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  }, /* Use this if you use the betteralpha patch */
++/*		Use this if you use the alpha or betteralpha patch */
++/*		{ "alpha",          FLOAT,   &alpha          },    */
++/*		Use this if you use the alpha focus patch          */
++/*		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed},    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   },    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alpha2",         FLOAT,   &alpha2         },    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  },    */
 +		{ "color0",         STRING,  &colorname[0]   },
 +		{ "color1",         STRING,  &colorname[1]   },
 +		{ "color2",         STRING,  &colorname[2]   },
@@ -88,24 +93,45 @@ index 0895a1f..fee5066 100644
  /*
   * Force mouse select/shortcuts while mask is active (when MODE_MOUSE is set).
   * Note that if you want to use ShiftMask with selmasks, set this to an other
-@@ -188,6 +242,7 @@ static Shortcut shortcuts[] = {
+@@ -188,6 +247,8 @@ static Shortcut shortcuts[] = {
  	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
  	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
  	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
-+	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} }, /* Better Xresources */
++	/* Better Xresources */
++	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} },
  };
  
  /*
+diff --git a/config.mk b/config.mk
+index beafc35..9cfc1ed 100644
+--- a/config.mk
++++ b/config.mk
+@@ -21,7 +21,7 @@ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
+        `$(PKG_CONFIG) --libs freetype2`
+ 
+ # flags
+-STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600
++STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
+ STCFLAGS = $(INCS) $(STCPPFLAGS) $(CPPFLAGS) $(CFLAGS)
+ STLDFLAGS = $(LIBS) $(LDFLAGS)
+ 
 diff --git a/x.c b/x.c
-index e5f1737..b451a34 100644
+index e5f1737..e1a6cd4 100644
 --- a/x.c
 +++ b/x.c
-@@ -14,6 +14,8 @@
+@@ -3,6 +3,7 @@
+ #include <math.h>
+ #include <limits.h>
+ #include <locale.h>
++#include <pwd.h> /* Better Xresources */
+ #include <signal.h>
+ #include <sys/select.h>
+ #include <time.h>
+@@ -14,6 +15,7 @@
  #include <X11/keysym.h>
  #include <X11/Xft/Xft.h>
  #include <X11/XKBlib.h>
 +#include <X11/Xresource.h> /* Better Xresources */
-+#include <pwd.h> /* Better Xresources */
  
  char *argv0;
  #include "arg.h"
@@ -113,19 +139,19 @@ index e5f1737..b451a34 100644
  	signed char appcursor; /* application cursor */
  } Key;
  
-+/* ++Better Xresources */
++/* Better Xresources */
 +enum resource_type {
 +	STRING = 0,
 +	INTEGER = 1,
 +	FLOAT = 2
 +};
 +
++/* Better Xresources */
 +typedef struct {
 +	char *name;
 +	enum resource_type type;
 +	void *dst;
 +} ResourcePref;
-+/* --Better Xresources */
 +
  /* X modifiers */
  #define XK_ANY_MOD    UINT_MAX
@@ -156,12 +182,16 @@ index e5f1737..b451a34 100644
  	xw.scr = XDefaultScreen(xw.dpy);
  	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
  
-@@ -1983,6 +1998,128 @@ usage(void)
+@@ -1983,6 +1998,146 @@ usage(void)
  	    " [stty_args ...]\n", argv0, argv0);
  }
  
-+/* ++Better Xresources */
++/* Better Xresources */
++/* TODO: Simplify these and clean them up as much as possible *
++ * Also understand them
++ */
 +/* Slightly modified from surf source */
++/* Better Xresources */
 +static const char*
 +getuserhomedir(const char *user)
 +{
@@ -172,6 +202,7 @@ index e5f1737..b451a34 100644
 +	return pw->pw_dir;
 +}
 +
++/* Better Xresources */
 +/* Slightly modified from surf source */
 +static const char*
 +getcurrentuserhomedir(void)
@@ -180,8 +211,10 @@ index e5f1737..b451a34 100644
 +	const char *user;
 +	struct passwd *pw;
 +
-+	if ((homedir = getenv("HOME"))) return homedir;
-+	if ((user    = getenv("USER"))) return getuserhomedir(user);
++	if ((homedir = getenv("HOME")))
++		return homedir;
++	if ((user = getenv("USER")))
++		return getuserhomedir(user);
 +
 +	if (!(pw = getpwuid(getuid())))
 +		fprintf(stderr, "can't get current user home directory\n");
@@ -189,7 +222,9 @@ index e5f1737..b451a34 100644
 +	return pw->pw_dir;
 +}
 +
++/* Better Xresources */
 +/* Slightly modified from surf source */
++/* Assumes path has ~ in it? */
 +char *
 +untildepath(const char *path)
 +{
@@ -197,12 +232,16 @@ index e5f1737..b451a34 100644
 +	const char *homedir;
 +
 +	if (path[1] == '/' || path[1] == '\0') { /* path = "~" or "~/" */
-+			p = (char *)&path[1];
-+			homedir = getcurrentuserhomedir();
++		p = (char *)&path[1]; /* Why not just path + 1?
++		                       * To create a copy starting at path + 1? */
++		homedir = getcurrentuserhomedir();
 +	} else {
-+		name = (p = strchr(path, '/')) ?        /* If there is a '/' in path */
-+			strndup(&path[1], p - (path + 1)) : /* Pull off the bit before the '/' */
-+			strdup(&path[1]);                   /* Otherwise the whole thing is a name */
++		/* If there is a '/' in path */
++		name = (p = strchr(path, '/')) ?
++		    /* Pull off the bit before the '/' */
++		    strndup(&path[1], p - (path + 1)) :
++		    /* Otherwise the whole thing is a name */
++		    strdup(&path[1]);
 +
 +		homedir = getuserhomedir(name); /* ??? */
 +		free(name);
@@ -212,6 +251,7 @@ index e5f1737..b451a34 100644
 +	return apath;
 +}
 +
++/* Better Xresources */
 +int
 +loadDatabase(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
 +{
@@ -224,8 +264,10 @@ index e5f1737..b451a34 100644
 +	char *type;
 +	XrmValue ret;
 +
-+	snprintf(fullname,  sizeof(fullname),  "%s.%s", opt_name  ? opt_name  : "st", name);
-+	snprintf(fullclass, sizeof(fullclass), "%s.%s", opt_class ? opt_class : "St", name);
++	snprintf(fullname,  sizeof(fullname),  "%s.%s",
++	        opt_name  ? opt_name  : "st", name);
++	snprintf(fullclass, sizeof(fullclass), "%s.%s",
++	        opt_class ? opt_class : "St", name);
 +
 +	XrmGetResource(db, fullname, fullclass, &type, &ret);
 +	if (ret.addr == NULL || strncmp("String", type, 64))
@@ -241,6 +283,7 @@ index e5f1737..b451a34 100644
 +	return 0;
 +}
 +
++/* Better Xresources */
 +void
 +loadResourceFile(const char *file)
 +{
@@ -263,6 +306,7 @@ index e5f1737..b451a34 100644
 +		loadDatabase(db, p->name, p->type, p->dst);
 +}
 +
++/* Better Xresources */
 +void
 +loadResources(void)
 +{
@@ -273,6 +317,7 @@ index e5f1737..b451a34 100644
 +	loadResourceFile(colorsFile);
 +}
 +
++/* Better Xresources */
 +void
 +rloadResources(const Arg *dummy)
 +{
@@ -280,12 +325,11 @@ index e5f1737..b451a34 100644
 +	xloadcols();
 +	cresize(win.w, win.h);
 +}
-+/* --Better Xresources */
 +
  int
  main(int argc, char *argv[])
  {
-@@ -2043,6 +2180,11 @@ run:
+@@ -2043,6 +2198,11 @@ run:
  
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");

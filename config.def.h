@@ -166,11 +166,16 @@ ResourcePref resources[] = {
 		/* Name             Type     Variable */
 		{ "font",           STRING,  &font           },
 		{ "xcolorsFile",    STRING,  &colorsFile     },
-//		{ "alpha",          FLOAT,   &alpha          }, /* Use this if you use the alpha or betteralpha patch */
-//		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed}, /* Use this if you use the alpha focus patch */
-//		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   }, /* Use this if you use the betteralpha patch */
-//		{ "alpha2",         FLOAT,   &alpha2         }, /* Use this if you use the betteralpha patch */
-//		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  }, /* Use this if you use the betteralpha patch */
+/*		Use this if you use the alpha or betteralpha patch */
+/*		{ "alpha",          FLOAT,   &alpha          },    */
+/*		Use this if you use the alpha focus patch          */
+/*		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed},    */
+/*		Use this if you use the betteralpha patch          */
+/*		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   },    */
+/*		Use this if you use the betteralpha patch          */
+/*		{ "alpha2",         FLOAT,   &alpha2         },    */
+/*		Use this if you use the betteralpha patch          */
+/*		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  },    */
 		{ "color0",         STRING,  &colorname[0]   },
 		{ "color1",         STRING,  &colorname[1]   },
 		{ "color2",         STRING,  &colorname[2]   },
@@ -242,7 +247,8 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
-	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} }, /* Better Xresources */
+	/* Better Xresources */
+	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} },
 };
 
 /*
