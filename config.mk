@@ -21,12 +21,14 @@ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
        `$(PKG_CONFIG) --libs freetype2`
 
 # flags
+# Better Xresources #
 STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
 STCFLAGS = $(INCS) $(STCPPFLAGS) $(CPPFLAGS) $(CFLAGS)
 STLDFLAGS = $(LIBS) $(LDFLAGS)
 
 # OpenBSD:
-#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
+# Better Xresources #
+#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700 -D_BSD_SOURCE
 #LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft \
 #       `pkg-config --libs fontconfig` \
 #       `pkg-config --libs freetype2`

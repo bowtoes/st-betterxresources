@@ -2003,7 +2003,6 @@ usage(void)
  * Also understand them
  */
 /* Slightly modified from surf source */
-/* Better Xresources */
 static const char*
 getuserhomedir(const char *user)
 {

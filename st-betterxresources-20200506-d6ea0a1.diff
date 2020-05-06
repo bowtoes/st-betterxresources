@@ -10,7 +10,7 @@ index 0895a1f..c541699 100644
 +	"~/.config/xconf/Xresources",
 +};
 +static char *colorsFile = "~/.config/xconf/Xcolor";
- 
+
  /*
   * What program is execed by st depends of these precedence rules:
 @@ -111,6 +115,8 @@ static const char *colorname[] = {
@@ -20,8 +20,8 @@ index 0895a1f..c541699 100644
 +	"black", /* Better Xresources */
 +	"white", /* Better Xresources */
  };
- 
- 
+
+
 @@ -118,8 +124,8 @@ static const char *colorname[] = {
   * Default colors (colorname index)
   * foreground, background, cursor, reverse cursor
@@ -32,11 +32,11 @@ index 0895a1f..c541699 100644
 +unsigned int defaultbg = 258; /* Better Xresources */
  static unsigned int defaultcs = 256;
  static unsigned int defaultrcs = 257;
- 
+
 @@ -152,6 +158,59 @@ static unsigned int mousebg = 0;
   */
  static unsigned int defaultattr = 11;
- 
+
 +/* ++Better Xresources */
 +/*
 + * Xresources preferences to load at startup
@@ -100,23 +100,31 @@ index 0895a1f..c541699 100644
 +	/* Better Xresources */
 +	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} },
  };
- 
+
  /*
 diff --git a/config.mk b/config.mk
-index beafc35..9cfc1ed 100644
+index beafc35..b3b9712 100644
 --- a/config.mk
 +++ b/config.mk
-@@ -21,7 +21,7 @@ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
+@@ -21,12 +21,14 @@ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
         `$(PKG_CONFIG) --libs freetype2`
- 
+
  # flags
 -STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600
++# Better Xresources #
 +STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
  STCFLAGS = $(INCS) $(STCPPFLAGS) $(CPPFLAGS) $(CFLAGS)
  STLDFLAGS = $(LIBS) $(LDFLAGS)
- 
+
+ # OpenBSD:
+-#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
++# Better Xresources #
++#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700 -D_BSD_SOURCE
+ #LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft \
+ #       `pkg-config --libs fontconfig` \
+ #       `pkg-config --libs freetype2`
 diff --git a/x.c b/x.c
-index e5f1737..e1a6cd4 100644
+index e5f1737..5b17f92 100644
 --- a/x.c
 +++ b/x.c
 @@ -3,6 +3,7 @@
@@ -132,13 +140,13 @@ index e5f1737..e1a6cd4 100644
  #include <X11/Xft/Xft.h>
  #include <X11/XKBlib.h>
 +#include <X11/Xresource.h> /* Better Xresources */
- 
+
  char *argv0;
  #include "arg.h"
 @@ -45,6 +47,20 @@ typedef struct {
  	signed char appcursor; /* application cursor */
  } Key;
- 
+
 +/* Better Xresources */
 +enum resource_type {
 +	STRING = 0,
@@ -161,7 +169,7 @@ index e5f1737..e1a6cd4 100644
  static void zoomreset(const Arg *);
  static void ttysend(const Arg *);
 +static void rloadResources(const Arg *); /* Better Xresources */
- 
+
  /* config.h for applying patches and the configuration. */
  #include "config.h"
 @@ -790,7 +807,7 @@ xloadcols(void)
@@ -176,22 +184,21 @@ index e5f1737..e1a6cd4 100644
 @@ -1104,8 +1121,6 @@ xinit(int cols, int rows)
  	pid_t thispid = getpid();
  	XColor xmousefg, xmousebg;
- 
+
 -	if (!(xw.dpy = XOpenDisplay(NULL)))
 -		die("can't open display\n");
  	xw.scr = XDefaultScreen(xw.dpy);
  	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
- 
-@@ -1983,6 +1998,146 @@ usage(void)
+
+@@ -1983,6 +1998,145 @@ usage(void)
  	    " [stty_args ...]\n", argv0, argv0);
  }
- 
+
 +/* Better Xresources */
 +/* TODO: Simplify these and clean them up as much as possible *
 + * Also understand them
 + */
 +/* Slightly modified from surf source */
-+/* Better Xresources */
 +static const char*
 +getuserhomedir(const char *user)
 +{
@@ -329,8 +336,8 @@ index e5f1737..e1a6cd4 100644
  int
  main(int argc, char *argv[])
  {
-@@ -2043,6 +2198,11 @@ run:
- 
+@@ -2043,6 +2197,11 @@ run:
+
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");
 +
