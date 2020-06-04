@@ -207,8 +207,9 @@ ResourcePref resources[] = {
 		{ "foreground",     STRING,  &colorname[259] },
 		{ "termname",       STRING,  &termname       },
 		{ "shell",          STRING,  &shell          },
-		{ "xfps",           INTEGER, &xfps           },
-		{ "actionfps",      INTEGER, &actionfps      },
+		/* TODO: These two should be treated as doubles */
+		{ "minlatency"      INTEGER, &minlatency     },
+		{ "maxlatency",     INTEGER, &maxlatency     },
 		{ "blinkTime",      INTEGER, &blinktimeout   },
 		{ "bellvolume",     INTEGER, &bellvolume     },
 		{ "tabspaces",      INTEGER, &tabspaces      },
