@@ -208,7 +208,7 @@ ResourcePref resources[] = {
 		{ "termname",       STRING,  &termname       },
 		{ "shell",          STRING,  &shell          },
 		/* TODO: These two should be treated as doubles */
-		{ "minlatency"      INTEGER, &minlatency     },
+		{ "minlatency",     INTEGER, &minlatency     },
 		{ "maxlatency",     INTEGER, &maxlatency     },
 		{ "blinkTime",      INTEGER, &blinktimeout   },
 		{ "bellvolume",     INTEGER, &bellvolume     },
