@@ -1,0 +1,351 @@
+diff --git a/config.def.h b/config.def.h
+index 6f05dce..f54a725 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -7,6 +7,10 @@
+  */
+ static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true";
+ static int borderpx = 2;
++static const char *resourceFiles[] = { /* Better Xresources */
++	"~/.config/xconf/Xresources",
++};
++static char *colorsFile = "~/.config/xconf/Xcolor";
+ 
+ /*
+  * What program is execed by st depends of these precedence rules:
+@@ -120,6 +124,8 @@ static const char *colorname[] = {
+ 	/* more colors can be added after 255 to use with DefaultXX */
+ 	"#cccccc",
+ 	"#555555",
++	"black", /* Better Xresources */
++	"white", /* Better Xresources */
+ };
+ 
+ 
+@@ -127,8 +133,8 @@ static const char *colorname[] = {
+  * Default colors (colorname index)
+  * foreground, background, cursor, reverse cursor
+  */
+-unsigned int defaultfg = 7;
+-unsigned int defaultbg = 0;
++unsigned int defaultfg = 259; /* Better Xresources */
++unsigned int defaultbg = 258; /* Better Xresources */
+ static unsigned int defaultcs = 256;
+ static unsigned int defaultrcs = 257;
+ 
+@@ -161,6 +167,60 @@ static unsigned int mousebg = 0;
+  */
+ static unsigned int defaultattr = 11;
+ 
++/* ++Better Xresources */
++/*
++ * Xresources preferences to load at startup
++ */
++ResourcePref resources[] = {
++		/* Name             Type     Variable */
++		{ "font",           STRING,  &font           },
++		{ "xcolorsFile",    STRING,  &colorsFile     },
++/*		Use this if you use the alpha or betteralpha patch */
++/*		{ "alpha",          FLOAT,   &alpha          },    */
++/*		Use this if you use the alpha focus patch          */
++/*		{ "alphaUnfocussed",FLOAT,   &alphaUnfocussed},    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alphaNoFocus",   FLOAT,   &alphaNoFocus   },    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alpha2",         FLOAT,   &alpha2         },    */
++/*		Use this if you use the betteralpha patch          */
++/*		{ "alpha2NoFocus",  FLOAT,   &alpha2NoFocus  },    */
++		{ "color0",         STRING,  &colorname[0]   },
++		{ "color1",         STRING,  &colorname[1]   },
++		{ "color2",         STRING,  &colorname[2]   },
++		{ "color3",         STRING,  &colorname[3]   },
++		{ "color4",         STRING,  &colorname[4]   },
++		{ "color5",         STRING,  &colorname[5]   },
++		{ "color6",         STRING,  &colorname[6]   },
++		{ "color7",         STRING,  &colorname[7]   },
++		{ "color8",         STRING,  &colorname[8]   },
++		{ "color9",         STRING,  &colorname[9]   },
++		{ "color10",        STRING,  &colorname[10]  },
++		{ "color11",        STRING,  &colorname[11]  },
++		{ "color12",        STRING,  &colorname[12]  },
++		{ "color13",        STRING,  &colorname[13]  },
++		{ "color14",        STRING,  &colorname[14]  },
++		{ "color15",        STRING,  &colorname[15]  },
++		{ "cursorColor",    STRING,  &colorname[256] },
++		{ "rcursorColor",   STRING,  &colorname[257] },
++		{ "background",     STRING,  &colorname[258] },
++		{ "foreground",     STRING,  &colorname[259] },
++		{ "termname",       STRING,  &termname       },
++		{ "shell",          STRING,  &shell          },
++		/* TODO: These two should be treated as doubles */
++		{ "minlatency",     INTEGER, &minlatency     },
++		{ "maxlatency",     INTEGER, &maxlatency     },
++		{ "blinkTime",      INTEGER, &blinktimeout   },
++		{ "bellvolume",     INTEGER, &bellvolume     },
++		{ "tabspaces",      INTEGER, &tabspaces      },
++		{ "borderpx",       INTEGER, &borderpx       },
++		{ "cols",           INTEGER, &cols           },
++		{ "rows",           INTEGER, &rows           },
++		{ "cwscale",        FLOAT,   &cwscale        },
++		{ "chscale",        FLOAT,   &chscale        },
++};
++/* --Better Xresources */
++
+ /*
+  * Force mouse select/shortcuts while mask is active (when MODE_MOUSE is set).
+  * Note that if you want to use ShiftMask with selmasks, set this to an other
+@@ -199,6 +259,8 @@ static Shortcut shortcuts[] = {
+ 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
+ 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
+ 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
++	/* Better Xresources */
++	{ TERMMOD,              XK_R,           rloadResources, {.i =  0} },
+ };
+ 
+ /*
+diff --git a/config.mk b/config.mk
+index c070a4a..f4aec27 100644
+--- a/config.mk
++++ b/config.mk
+@@ -21,12 +21,14 @@ LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
+        `$(PKG_CONFIG) --libs freetype2`
+ 
+ # flags
+-STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600
++# Better Xresources #
++STCPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
+ STCFLAGS = $(INCS) $(STCPPFLAGS) $(CPPFLAGS) $(CFLAGS)
+ STLDFLAGS = $(LIBS) $(LDFLAGS)
+ 
+ # OpenBSD:
+-#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=600 -D_BSD_SOURCE
++# Better Xresources #
++#CPPFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700 -D_BSD_SOURCE
+ #LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft \
+ #       `$(PKG_CONFIG) --libs fontconfig` \
+ #       `$(PKG_CONFIG) --libs freetype2`
+diff --git a/x.c b/x.c
+index 120e495..a3edd31 100644
+--- a/x.c
++++ b/x.c
+@@ -3,6 +3,7 @@
+ #include <math.h>
+ #include <limits.h>
+ #include <locale.h>
++#include <pwd.h> /* Better Xresources */
+ #include <signal.h>
+ #include <sys/select.h>
+ #include <time.h>
+@@ -14,6 +15,7 @@
+ #include <X11/keysym.h>
+ #include <X11/Xft/Xft.h>
+ #include <X11/XKBlib.h>
++#include <X11/Xresource.h> /* Better Xresources */
+ 
+ char *argv0;
+ #include "arg.h"
+@@ -45,6 +47,20 @@ typedef struct {
+ 	signed char appcursor; /* application cursor */
+ } Key;
+ 
++/* Better Xresources */
++enum resource_type {
++	STRING = 0,
++	INTEGER = 1,
++	FLOAT = 2
++};
++
++/* Better Xresources */
++typedef struct {
++	char *name;
++	enum resource_type type;
++	void *dst;
++} ResourcePref;
++
+ /* X modifiers */
+ #define XK_ANY_MOD    UINT_MAX
+ #define XK_NO_MOD     0
+@@ -59,6 +75,7 @@ static void zoom(const Arg *);
+ static void zoomabs(const Arg *);
+ static void zoomreset(const Arg *);
+ static void ttysend(const Arg *);
++static void rloadResources(const Arg *); /* Better Xresources */
+ 
+ /* config.h for applying patches and the configuration. */
+ #include "config.h"
+@@ -790,7 +807,7 @@ xloadcols(void)
+ 	for (i = 0; i < dc.collen; i++)
+ 		if (!xloadcolor(i, NULL, &dc.col[i])) {
+ 			if (colorname[i])
+-				die("could not allocate color '%s'\n", colorname[i]);
++				die("could not allocate color %d: %s\n", i, colorname[i]);
+ 			else
+ 				die("could not allocate color %d\n", i);
+ 		}
+@@ -1104,8 +1121,6 @@ xinit(int cols, int rows)
+ 	pid_t thispid = getpid();
+ 	XColor xmousefg, xmousebg;
+ 
+-	if (!(xw.dpy = XOpenDisplay(NULL)))
+-		die("can't open display\n");
+ 	xw.scr = XDefaultScreen(xw.dpy);
+ 	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
+ 
+@@ -1991,6 +2006,145 @@ usage(void)
+ 	    " [stty_args ...]\n", argv0, argv0);
+ }
+ 
++/* Better Xresources */
++/* TODO: Simplify these and clean them up as much as possible *
++ * Also understand them
++ */
++/* Slightly modified from surf source */
++static const char*
++getuserhomedir(const char *user)
++{
++	struct passwd *pw;
++
++	if (!(pw = getpwnam(user)))
++		fprintf(stderr, "can't get user %s login information.\n", user);
++	return pw->pw_dir;
++}
++
++/* Better Xresources */
++/* Slightly modified from surf source */
++static const char*
++getcurrentuserhomedir(void)
++{
++	const char *homedir;
++	const char *user;
++	struct passwd *pw;
++
++	if ((homedir = getenv("HOME")))
++		return homedir;
++	if ((user = getenv("USER")))
++		return getuserhomedir(user);
++
++	if (!(pw = getpwuid(getuid())))
++		fprintf(stderr, "can't get current user home directory\n");
++
++	return pw->pw_dir;
++}
++
++/* Better Xresources */
++/* Slightly modified from surf source */
++/* Assumes path has ~ in it? */
++char *
++untildepath(const char *path)
++{
++	char *apath, *name, *p;
++	const char *homedir;
++
++	if (path[1] == '/' || path[1] == '\0') { /* path = "~" or "~/" */
++		p = (char *)&path[1]; /* Why not just path + 1?
++		                       * To create a copy starting at path + 1? */
++		homedir = getcurrentuserhomedir();
++	} else {
++		/* If there is a '/' in path */
++		name = (p = strchr(path, '/')) ?
++		    /* Pull off the bit before the '/' */
++		    strndup(&path[1], p - (path + 1)) :
++		    /* Otherwise the whole thing is a name */
++		    strdup(&path[1]);
++
++		homedir = getuserhomedir(name); /* ??? */
++		free(name);
++	}
++	apath = (char *)malloc(PATH_MAX);
++	snprintf(apath, PATH_MAX, "%s%s", homedir, p);
++	return apath;
++}
++
++/* Better Xresources */
++int
++loadDatabase(XrmDatabase db, char *name, enum resource_type rtype, void *dst)
++{
++	char **sdst = dst;
++	int *idst = dst;
++	float *fdst = dst;
++
++	char fullname[256];
++	char fullclass[256];
++	char *type;
++	XrmValue ret;
++
++	snprintf(fullname,  sizeof(fullname),  "%s.%s",
++	        opt_name  ? opt_name  : "st", name);
++	snprintf(fullclass, sizeof(fullclass), "%s.%s",
++	        opt_class ? opt_class : "St", name);
++
++	XrmGetResource(db, fullname, fullclass, &type, &ret);
++	if (ret.addr == NULL || strncmp("String", type, 64))
++		return 1;
++
++	if (rtype == STRING)
++		*sdst = ret.addr;
++	else if (rtype == INTEGER)
++		*idst = strtoul(ret.addr, NULL, 10);
++	else if (rtype == FLOAT)
++		*fdst = strtof(ret.addr, NULL);
++
++	return 0;
++}
++
++/* Better Xresources */
++void
++loadResourceFile(const char *file)
++{
++	XrmDatabase db;
++	ResourcePref *p;
++	char *apath, *path;
++
++	apath = file[0] == '~' ? untildepath(file) : strdup(file);
++	path = realpath(apath, NULL);
++	free(apath);
++
++	if (!path)
++		return;
++	db = XrmGetFileDatabase(path);
++	free(path);
++
++	if (!db)
++		return;
++	for (p = resources; p < resources + LEN(resources); p++)
++		loadDatabase(db, p->name, p->type, p->dst);
++}
++
++/* Better Xresources */
++void
++loadResources(void)
++{
++	int i = 0;
++
++	for (; i < LEN(resourceFiles); i++)
++		loadResourceFile(resourceFiles[i]);
++	loadResourceFile(colorsFile);
++}
++
++/* Better Xresources */
++void
++rloadResources(const Arg *dummy)
++{
++	loadResources();
++	xloadcols();
++	cresize(win.w, win.h);
++}
++
+ int
+ main(int argc, char *argv[])
+ {
+@@ -2051,6 +2205,11 @@ run:
+ 
+ 	setlocale(LC_CTYPE, "");
+ 	XSetLocaleModifiers("");
++
++	if (!(xw.dpy = XOpenDisplay(NULL))) /* Better Xresources */
++		die("can't open display\n");
++	XrmInitialize(); /* Better Xresources */
++	loadResources(); /* Better Xresources */
+ 	cols = MAX(cols, 1);
+ 	rows = MAX(rows, 1);
+ 	tnew(cols, rows);
